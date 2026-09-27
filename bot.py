@@ -398,11 +398,29 @@ def download_audio_with_progress_impl(yt_id, loop, status_msg):
         performer = info.get('uploader', 'Музыка')
         return file_path, title, performer
 
+import os
+from aiohttp import web
+
+async def handle(request):
+    return web.Response(text="I am alive!")
+
+app = web.Application()
+app.router.add_get("/", handle)
+
+async def web_server():
+    runner = web.AppRunner(app)
+    await runner.setup()
+    port = int(os.environ.get("PORT", 10000))
+    site = web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
 
 async def main():
     await init_db()
     print("🤖 Бот успешно запущен!")
-    await dp.start_polling(bot)
+    await asyncio.gather(
+        web_server(),
+        dp.start_polling(bot)
+    )
 
 if __name__ == "__main__":
     asyncio.run(main())
